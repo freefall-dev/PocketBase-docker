@@ -41,8 +41,8 @@ COPY --chmod=0755 entrypoint.root.sh /pb/entrypoint.root.sh
 VOLUME /pb/pb_data
 
 # default listen port; override at runtime with -e PB_PORT=...
-ENV PB_PORT=8080
-EXPOSE 8080
+ENV PB_PORT=8070
+EXPOSE 8070
 
 # shell form so ${PB_PORT} is expanded from the runtime environment
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \

@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
     environment:
       # server
-      PB_PORT: ${PB_PORT:-8080}
+      PB_PORT: ${PB_PORT:-8070}
       # superuser bootstrap (checked/created by the entrypoint on every start)
       PB_ADMIN_EMAIL: ${PB_ADMIN_EMAIL:-}
       PB_ADMIN_PASSWORD: ${PB_ADMIN_PASSWORD:-}
@@ -24,7 +24,7 @@ services:
       PB_ENCRYPTION_KEY: ${PB_ENCRYPTION_KEY:-}
     ports:
       # host:container
-      - "${PB_PORT:-8080}:${PB_PORT:-8080}"
+      - "${PB_PORT:-8070}:${PB_PORT:-8070}"
     volumes:
       # persist the SQLite database and uploaded files
       - pb_data:/pb/pb_data
@@ -32,7 +32,7 @@ services:
       # - ./pb_migrations:/pb/pb_migrations
       # - ./pb_hooks:/pb/pb_hooks
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${PB_PORT:-8080}/api/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${PB_PORT:-8070}/api/health || exit 1"]
       interval: 30s
       timeout: 5s
       start_period: 5s

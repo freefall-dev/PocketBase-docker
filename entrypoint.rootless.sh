@@ -6,7 +6,7 @@ set -e
 
 DATA_DIR="/pb/pb_data"
 DB_FILE="${DATA_DIR}/data.db"
-PB_PORT="${PB_PORT:-8080}"
+PB_PORT="${PB_PORT:-8070}"
 
 # ---- assemble global flags shared by every pocketbase invocation ----
 set -- --dir="${DATA_DIR}"
