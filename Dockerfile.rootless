@@ -1,0 +1,56 @@
+# syntax=docker/dockerfile:1
+
+# ---- build stage: fetch + verify + unzip PocketBase ----
+FROM alpine:3.22 AS build
+
+ARG PB_VERSION=0.39.7
+# provided automatically by buildx (e.g. amd64, arm64)
+ARG TARGETARCH
+
+RUN apk add --no-cache unzip ca-certificates
+
+# download the release zip and its checksums file
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_${TARGETARCH}.zip /tmp/pb.zip
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_checksums.txt /tmp/pb_checksums.txt
+
+# verify integrity against the published checksums, then unzip
+RUN grep "pocketbase_${PB_VERSION}_linux_${TARGETARCH}.zip" /tmp/pb_checksums.txt \
+      | sed "s#pocketbase_${PB_VERSION}_linux_${TARGETARCH}.zip#/tmp/pb.zip#" \
+      | sha256sum -c - \
+    && unzip /tmp/pb.zip -d /pb/
+
+# ---- runtime stage: minimal image with just the binary ----
+FROM alpine:3.22
+
+# ca-certificates: outbound TLS (e.g. OAuth, mailer)
+# sqlite: used by the entrypoint to check whether the superuser already exists
+RUN apk add --no-cache ca-certificates sqlite \
+    # non-root user to run PocketBase
+    && addgroup -S pb && adduser -S -G pb -H -D pb \
+    && mkdir -p /pb/pb_data \
+    && chown -R pb:pb /pb
+
+COPY --from=build --chown=pb:pb /pb/pocketbase /pb/pocketbase
+COPY --chown=pb:pb --chmod=0755 entrypoint.rootless.sh /pb/entrypoint.rootless.sh
+
+# uncomment to copy the local pb_migrations dir into the image
+# COPY --chown=pb:pb ./pb_migrations /pb/pb_migrations
+
+# uncomment to copy the local pb_hooks dir into the image
+# COPY --chown=pb:pb ./pb_hooks /pb/pb_hooks
+
+# persist the SQLite database and uploaded files across container recreations
+VOLUME /pb/pb_data
+
+USER pb
+
+# default listen port; override at runtime with -e PB_PORT=...
+ENV PB_PORT=8080
+EXPOSE 8080
+
+# shell form so ${PB_PORT} is expanded from the runtime environment
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD wget -qO- "http://127.0.0.1:${PB_PORT}/api/health" || exit 1
+
+# entrypoint handles superuser bootstrap + encryption, then execs `serve`
+ENTRYPOINT ["/pb/entrypoint.rootless.sh"]

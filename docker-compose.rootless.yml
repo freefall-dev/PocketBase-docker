@@ -1,0 +1,42 @@
+# Rootless PocketBase (runs as the non-root `pb` user).
+# Run: docker compose -f docker-compose.rootless.yml up -d
+# For the root variant, use: docker compose -f docker-compose.root.yml up -d
+name: pocketbase
+
+services:
+  pocketbase:
+    build:
+      context: .
+      dockerfile: Dockerfile.rootless
+      args:
+        # PocketBase version to bake into the image (see .env)
+        PB_VERSION: ${PB_VERSION:-0.39.7}
+    image: pocketbase:${PB_VERSION:-0.39.7}
+    container_name: ${CONTAINER_NAME:-pocketbase}
+    restart: unless-stopped
+    environment:
+      # server
+      PB_PORT: ${PB_PORT:-8080}
+      # superuser bootstrap (checked/created by the entrypoint on every start)
+      PB_ADMIN_EMAIL: ${PB_ADMIN_EMAIL:-}
+      PB_ADMIN_PASSWORD: ${PB_ADMIN_PASSWORD:-}
+      # settings encryption (must be exactly 32 characters when set)
+      PB_ENCRYPTION_KEY: ${PB_ENCRYPTION_KEY:-}
+    ports:
+      # host:container
+      - "${PB_PORT:-8080}:${PB_PORT:-8080}"
+    volumes:
+      # persist the SQLite database and uploaded files
+      - pb_data:/pb/pb_data
+      # uncomment to develop migrations/hooks against the running instance
+      # - ./pb_migrations:/pb/pb_migrations
+      # - ./pb_hooks:/pb/pb_hooks
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${PB_PORT:-8080}/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+
+volumes:
+  pb_data:

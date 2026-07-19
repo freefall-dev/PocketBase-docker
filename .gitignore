@@ -1,0 +1,27 @@
+# ── Secrets / local config ────────────────────────────────────────────
+# .env holds admin credentials and the encryption key — never commit it.
+.env
+.env.*
+!.env.example
+
+# ── PocketBase runtime data ───────────────────────────────────────────
+# Local bind-mounts of the SQLite DB, uploads, and generated files.
+pb_data/
+pb_public/
+pocketbase
+pocketbase.exe
+
+# Migrations/hooks are usually versioned; ignore only local scratch copies.
+# pb_migrations/
+# pb_hooks/
+
+# ── Tooling ───────────────────────────────────────────────────────────
+.claude/settings.local.json
+
+# ── OS / editor cruft ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/

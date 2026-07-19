@@ -1,0 +1,42 @@
+# Root PocketBase (runs as root inside the container).
+# Run: docker compose -f docker-compose.root.yml up -d
+# A distinct project name keeps its container/volume separate from the rootless stack.
+name: pocketbase-root
+
+services:
+  pocketbase:
+    build:
+      context: .
+      dockerfile: Dockerfile.root
+      args:
+        # PocketBase version to bake into the image (see .env)
+        PB_VERSION: ${PB_VERSION:-0.39.7}
+    image: pocketbase:${PB_VERSION:-0.39.7}-root
+    container_name: ${CONTAINER_NAME:-pocketbase}-root
+    restart: unless-stopped
+    environment:
+      # server
+      PB_PORT: ${PB_PORT_ROOT:-8081}
+      # superuser bootstrap (checked/created by the entrypoint on every start)
+      PB_ADMIN_EMAIL: ${PB_ADMIN_EMAIL:-}
+      PB_ADMIN_PASSWORD: ${PB_ADMIN_PASSWORD:-}
+      # settings encryption (must be exactly 32 characters when set)
+      PB_ENCRYPTION_KEY: ${PB_ENCRYPTION_KEY:-}
+    ports:
+      # host:container
+      - "${PB_PORT_ROOT:-8081}:${PB_PORT_ROOT:-8081}"
+    volumes:
+      # persist the SQLite database and uploaded files
+      - pb_data:/pb/pb_data
+      # uncomment to develop migrations/hooks against the running instance
+      # - ./pb_migrations:/pb/pb_migrations
+      # - ./pb_hooks:/pb/pb_hooks
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${PB_PORT_ROOT:-8081}/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+
+volumes:
+  pb_data:
