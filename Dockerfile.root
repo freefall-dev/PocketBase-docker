@@ -11,7 +11,7 @@ RUN apk add --no-cache unzip ca-certificates
 
 # download the release zip and its checksums file
 ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_${TARGETARCH}.zip /tmp/pb.zip
-ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_checksums.txt /tmp/pb_checksums.txt
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/checksums.txt /tmp/pb_checksums.txt
 
 # verify integrity against the published checksums, then unzip
 RUN grep "pocketbase_${PB_VERSION}_linux_${TARGETARCH}.zip" /tmp/pb_checksums.txt \
