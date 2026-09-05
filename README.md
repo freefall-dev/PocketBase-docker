@@ -51,7 +51,7 @@ Copy `.env.example` to `.env` and adjust. Compose reads `.env` automatically; **
 
 | Variable | Default | Description |
 |---|---|---|
-| `PB_VERSION` | `0.39.9` | PocketBase release to build (published tag without the leading `v`). |
+| `PB_VERSION` | `0.40.0` | PocketBase release to build (published tag without the leading `v`). |
 | `CONTAINER_NAME` | `pocketbase` | Base name for the container. |
 | `PB_PORT` | `8070` | Port for the rootless stack (used inside the container and for the host mapping). |
 | `PB_PORT_ROOT` | `8070` | Port for the root stack. |
@@ -92,14 +92,14 @@ You can also bake `pb_migrations` / `pb_hooks` into the image by uncommenting th
 
 ```bash
 # pin a version
-PB_VERSION=0.39.9 docker compose -f docker-compose.rootless.yml build
+PB_VERSION=0.40.0 docker compose -f docker-compose.rootless.yml build
 
 # multi-arch build with buildx
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --build-arg PB_VERSION=0.39.9 \
+  --build-arg PB_VERSION=0.40.0 \
   -f Dockerfile.rootless \
-  -t pocketbase:0.39.9 .
+  -t pocketbase:0.40.0 .
 ```
 
 ## Health check
