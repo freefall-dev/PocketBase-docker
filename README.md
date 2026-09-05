@@ -102,6 +102,20 @@ docker buildx build \
   -t pocketbase:0.40.2 .
 ```
 
+### Bumping the pinned version
+
+`bump.sh` rewrites the version in every file that pins it (`.env.example`, both
+Dockerfiles, both Compose files, and this README) and commits the result:
+
+```bash
+./bump.sh <new-version>
+```
+
+Pass `--no-commit` to rewrite the files without committing. The script refuses
+to run on a dirty working tree when it would commit, so unrelated changes don't
+end up in the bump. When adding a new file that pins the version, add it to the
+`FILES` list at the top of the script.
+
 ## Health check
 
 Both images define a `HEALTHCHECK` that polls `http://127.0.0.1:${PB_PORT}/api/health`. Check status with:
