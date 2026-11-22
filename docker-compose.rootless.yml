@@ -27,7 +27,8 @@ services:
       - "${PB_PORT:-8070}:${PB_PORT:-8070}"
     volumes:
       # persist the SQLite database and uploaded files
-      - pb_data:/pb/pb_data
+      # (named volume by default; set PB_DATA to a host path for a bind mount)
+      - ${PB_DATA:-pb_data}:/pb/pb_data
       # uncomment to develop migrations/hooks against the running instance
       # - ./pb_migrations:/pb/pb_migrations
       # - ./pb_hooks:/pb/pb_hooks

@@ -55,6 +55,7 @@ Copy `.env.example` to `.env` and adjust. Compose reads `.env` automatically; **
 | `CONTAINER_NAME` | `pocketbase` | Base name for the container. |
 | `PB_PORT` | `8070` | Port for the rootless stack (used inside the container and for the host mapping). |
 | `PB_PORT_ROOT` | `8070` | Port for the root stack. |
+| `PB_DATA` | *(empty → `pb_data` volume)* | Host side of the `/pb/pb_data` mount. Blank uses the named volume `pb_data`; a host path (e.g. `./pb_data`) bind-mounts that directory. |
 | `PB_ADMIN_EMAIL` | *(empty)* | Superuser email to bootstrap. Leave blank to skip bootstrapping. |
 | `PB_ADMIN_PASSWORD` | *(empty)* | Superuser password. Required only when the admin doesn't yet exist. |
 | `PB_ENCRYPTION_KEY` | *(empty)* | Settings-encryption key. Must be **exactly 32 characters**. Leave blank to disable. |
@@ -79,7 +80,18 @@ The entrypoint validates the length and passes `--encryptionEnv=PB_ENCRYPTION_KE
 
 ## Data persistence
 
-The SQLite database and uploaded files live in `/pb/pb_data`, backed by the named Docker volume `pb_data`. Data survives container recreation. To develop migrations/hooks against the running instance, uncomment the bind mounts in the Compose file:
+The SQLite database and uploaded files live in `/pb/pb_data`, backed by the named Docker volume `pb_data`. Data survives container recreation.
+
+To keep the data in a host directory instead, set `PB_DATA` to a path:
+
+```bash
+# .env
+PB_DATA=./pb_data
+```
+
+For the rootless variant the directory must be writable by the container's `pb` user (`docker compose exec pocketbase id` shows its UID/GID; `chown` the directory to match). Note that the root and rootless stacks share a host path if both point `PB_DATA` at the same directory — use separate paths to keep them isolated.
+
+To develop migrations/hooks against the running instance, uncomment the bind mounts in the Compose file:
 
 ```yaml
 # - ./pb_migrations:/pb/pb_migrations
